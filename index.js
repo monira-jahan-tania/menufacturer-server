@@ -17,6 +17,8 @@ async function run() {
     try {
         await client.connect();
         const toolCollection = client.db('anyasha_tech').collection('tools');
+        const purchaseCollection = client.db('anyasha_tech').collection('purchases');
+        const userCollection = client.db('anyasha_tech').collection('users');
 
         app.get('/parts', async (req, res) => {
             const query = {};
@@ -30,6 +32,12 @@ async function run() {
             const part = await toolCollection.findOne(query);
             res.send(part);
         });
+        //purchased
+        app.post('/purchase', async (req, res) => {
+            const purchase = req.body;
+            const result = await purchaseCollection.insertOne(purchase);
+            return res.send({ success: true, result });
+        })
     }
     finally {
 
