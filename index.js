@@ -33,6 +33,12 @@ async function run() {
             res.send(part);
         });
         //purchased
+        app.get('/purchase', async (req, res) => {
+            const user = req.query.user;
+            const query = { user: user };
+            const purchase = await purchaseCollection.find(query).toArray();
+            return res.send(purchase);
+        })
         app.post('/purchase', async (req, res) => {
             const purchase = req.body;
             const result = await purchaseCollection.insertOne(purchase);
