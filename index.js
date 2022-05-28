@@ -71,7 +71,7 @@ async function run() {
                 payment_method_types: ['card']
             })
             res.send({ clientSecret: paymentIntent.client_secret })
-        })
+        });
 
         app.get('/part/:id', async (req, res) => {
             const id = req.params.id;
