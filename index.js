@@ -55,6 +55,11 @@ async function run() {
             const parts = await cursor.toArray();
             res.send(parts);
         });
+        app.post('/parts', async (req, res) => {
+            const parts = req.body;
+            const result = await toolCollection.insertOne(parts);
+            res.send(result);
+        });
         app.post('/create-payment-intent', verifyJWT, async (req, res) => {
             const purchase = req.body;
             const price = purchase.price;
@@ -100,7 +105,7 @@ async function run() {
             const filter = { email: email };
             const options = { upsert: true };
             const updateDoc = {
-                $set: user,
+                $set: { user },
             };
             const result = await userCollection.updateOne(filter, updateDoc, options);
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
@@ -112,6 +117,10 @@ async function run() {
             const query = { user: user };
             const purchase = await purchaseCollection.find(query).toArray();
             return res.send(purchase);
+        })
+        app.get('/allPurchase', async (req, res) => {
+            const allPurchased = await purchaseCollection.find().toArray();
+            res.send(allPurchased)
         })
         app.post('/purchase', async (req, res) => {
             const purchase = req.body;
@@ -145,6 +154,21 @@ async function run() {
             const review = req.body;
             const result = await reviewCollection.insertOne(review);
             return res.send({ success: true, result })
+        })
+
+        //profile
+        // app.put('/users', async(req, res)=>{
+        //     const user = req.body; 
+        // })
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const updateDoc = {
+                $set: user
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
         })
     }
     finally {
