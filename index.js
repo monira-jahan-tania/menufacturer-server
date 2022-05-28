@@ -36,6 +36,7 @@ async function run() {
         const purchaseCollection = client.db('anyasha_tech').collection('purchases');
         const userCollection = client.db('anyasha_tech').collection('users');
         const reviewCollection = client.db('anyasha_tech').collection('reviews');
+        const paymentCollection = client.db('anyasha_tech').collection('payments');
 
         const verifyAdmin = async (req, res, next) => {
             const requester = req.decoded.email;
@@ -54,6 +55,18 @@ async function run() {
             const parts = await cursor.toArray();
             res.send(parts);
         });
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+            const purchase = req.body;
+            const price = purchase.price;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            })
+            res.send({ clientSecret: paymentIntent.client_secret })
+        })
+
         app.get('/part/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -105,6 +118,28 @@ async function run() {
             const result = await purchaseCollection.insertOne(purchase);
             return res.send({ success: true, result });
         })
+        app.get('/purchase/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const purchase = await purchaseCollection.findOne(query);
+            res.send(purchase);
+        })
+        app.patch('/purchase/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+
+            const result = await paymentCollection.insertOne(payment);
+            const updatedPurchase = await purchaseCollection.updateOne(filter, updatedDoc);
+            res.send(updatedPurchase);
+        })
+
         //review
         app.post('/review', async (req, res) => {
             const review = req.body;
