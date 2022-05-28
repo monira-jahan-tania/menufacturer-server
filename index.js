@@ -161,10 +161,7 @@ async function run() {
             return res.send({ success: true, result })
         })
 
-        //profile
-        // app.put('/users', async(req, res)=>{
-        //     const user = req.body; 
-        // })
+
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
