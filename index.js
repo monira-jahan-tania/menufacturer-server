@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 const app = express();
 app.use(cors());
@@ -105,7 +106,7 @@ async function run() {
             const filter = { email: email };
             const options = { upsert: true };
             const updateDoc = {
-                $set: { user },
+                $set: user,
             };
             const result = await userCollection.updateOne(filter, updateDoc, options);
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
@@ -150,6 +151,10 @@ async function run() {
         })
 
         //review
+        app.get('/review', async (req, res) => {
+            const result = await reviewCollection.find().toArray();
+            res.send(result)
+        })
         app.post('/review', async (req, res) => {
             const review = req.body;
             const result = await reviewCollection.insertOne(review);
@@ -168,6 +173,12 @@ async function run() {
                 $set: user
             };
             const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+        app.delete('/parts/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await toolCollection.deleteOne(filter);
             res.send(result);
         })
     }
