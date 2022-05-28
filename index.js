@@ -144,7 +144,6 @@ async function run() {
                     transactionId: payment.transactionId
                 }
             }
-
             const result = await paymentCollection.insertOne(payment);
             const updatedPurchase = await purchaseCollection.updateOne(filter, updatedDoc);
             res.send(updatedPurchase);
@@ -160,8 +159,6 @@ async function run() {
             const result = await reviewCollection.insertOne(review);
             return res.send({ success: true, result })
         })
-
-
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -172,6 +169,7 @@ async function run() {
             const result = await userCollection.updateOne(filter, updateDoc);
             res.send(result);
         })
+        //parts delete
         app.delete('/parts/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
